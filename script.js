@@ -654,12 +654,14 @@ function saveData() {
     localStorage.setItem('aura-gratitude', JSON.stringify(S.gratitudeLog.slice(-50)));
   } catch(e) {}
 }
+const DEFAULT_ANTHROPIC_KEY = 'df4bf615b05de0fafd433ed17df28acaf7e73987328f0810e94bfed94dede7d6';
+
 function loadData() {
   try {
     S.chatHistory   = JSON.parse(localStorage.getItem('aura-history')   || '[]');
     S.moodLog       = JSON.parse(localStorage.getItem('aura-mood-log')  || '[]');
     S.gratitudeLog  = JSON.parse(localStorage.getItem('aura-gratitude') || '[]');
-    S.anthropicKey  = localStorage.getItem('aura-anthropic-key') || '';
+    S.anthropicKey  = localStorage.getItem('aura-anthropic-key') || DEFAULT_ANTHROPIC_KEY;
     S.elevenLabsKey = localStorage.getItem('aura-el-key') || '';
     S.userName      = localStorage.getItem('aura-name') || '';
     S.typingSpeed   = parseInt(localStorage.getItem('aura-typing-speed') || '20');
@@ -956,10 +958,7 @@ function initApp() {
 // ─── Boot ─────────────────────────────────────────────────────
 loadData();
 
-// If keys already saved, skip setup modal
-if (S.anthropicKey || localStorage.getItem('aura-setup-done')) {
-  $('setup-modal').classList.add('hidden');
-  localStorage.setItem('aura-setup-done','1');
-  initApp();
-}
-// else show setup modal (default state)
+// Key is always available — skip setup modal and launch directly
+$('setup-modal').classList.add('hidden');
+localStorage.setItem('aura-setup-done', '1');
+initApp();
