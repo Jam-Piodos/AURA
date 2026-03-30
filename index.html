@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AURA — Emotional AI Companion</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">AURA</span>
+      <span class="logo-sub">Emotional AI</span>
+    </div>
+    <div class="header-controls">
+      <div class="mood-display" id="mood-display">
+        <span class="mood-icon" id="mood-icon">😌</span>
+        <span class="mood-label" id="mood-label">Neutral</span>
+      </div>
+      <button class="icon-btn" id="voice-toggle" title="Toggle Voice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+          <path class="voice-on" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path class="voice-off hidden" d="M23 9l-6 6M17 9l6 6"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="clear-btn" title="Clear Chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main App -->
+  <main class="app-container">
+
+    <!-- AI Orb -->
+    <div class="orb-section">
+      <div class="orb-wrapper" id="orb-wrapper">
+        <div class="orb-ring orb-ring-1"></div>
+        <div class="orb-ring orb-ring-2"></div>
+        <div class="orb-ring orb-ring-3"></div>
+        <div class="orb-core" id="orb-core">
+          <div class="orb-inner">
+            <div class="orb-pulse"></div>
+            <span class="orb-symbol">◈</span>
+          </div>
+        </div>
+        <div class="orb-particles" id="orb-particles"></div>
+      </div>
+      <div class="orb-status" id="orb-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Ready to listen</span>
+      </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-section">
+      <div class="chat-window" id="chat-window">
+        <div class="chat-intro" id="chat-intro">
+          <p class="intro-line">Hey, I'm <strong>AURA</strong>.</p>
+          <p class="intro-sub">I'm here to listen, support, and think with you.<br/>What's on your mind?</p>
+        </div>
+      </div>
+
+      <!-- Thinking Bar -->
+      <div class="thinking-bar" id="thinking-bar">
+        <div class="thinking-steps" id="thinking-steps"></div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            id="user-input"
+            placeholder="Share what's on your mind…"
+            rows="1"
+            maxlength="500"
+          ></textarea>
+          <div class="input-actions">
+            <button class="mic-btn" id="mic-btn" title="Speak">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="2" width="6" height="11" rx="3"/>
+                <path d="M5 10a7 7 0 0 0 14 0"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+            </button>
+            <button class="send-btn" id="send-btn" title="Send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="char-count" id="char-count">0 / 500</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
