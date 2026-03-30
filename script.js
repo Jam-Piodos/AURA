@@ -897,16 +897,6 @@ $('settings-save-btn').addEventListener('click', ()=>{
   }
 });
 
-// Setup modal
-$('save-keys-btn').addEventListener('click', ()=>{
-  S.anthropicKey  = $('anthropic-key-input').value.trim();
-  S.elevenLabsKey = $('elevenlabs-key-input').value.trim();
-  saveKeys();
-  $('setup-modal').classList.add('hidden');
-  initApp();
-});
-$('skip-keys-btn').addEventListener('click', ()=>{ $('setup-modal').classList.add('hidden'); initApp(); });
-
 // Close modals on overlay click
 ['breathing-modal','history-modal','settings-modal','checkin-modal'].forEach(id=>{
   $(id).addEventListener('click', e=>{ if(e.target===e.currentTarget){ stopBreathing(); $(id).classList.add('hidden'); } });
@@ -957,8 +947,4 @@ function initApp() {
 
 // ─── Boot ─────────────────────────────────────────────────────
 loadData();
-
-// Key is always available — skip setup modal and launch directly
-$('setup-modal').classList.add('hidden');
-localStorage.setItem('aura-setup-done', '1');
 initApp();
