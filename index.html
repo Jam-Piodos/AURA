@@ -1,116 +1,297 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AURA — Emotional AI Companion</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
-  <!-- Background Canvas -->
-  <canvas id="bg-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="logo">
-      <span class="logo-icon">◈</span>
+<!-- ═══════════════════════════════
+     API KEY SETUP MODAL
+════════════════════════════════ -->
+<div class="modal-overlay" id="setup-modal">
+  <div class="modal-card setup-card">
+    <div class="modal-orb-icon">◈</div>
+    <h2 class="modal-title">Welcome to AURA</h2>
+    <p class="modal-desc">Add your API keys for the full AI experience. Both are optional — AURA still works with built-in responses and browser voice.</p>
+    <div class="key-group">
+      <label>Anthropic API Key <span class="key-badge claude">Claude Brain</span></label>
+      <input type="password" id="anthropic-key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+      <a href="https://console.anthropic.com/" target="_blank" class="key-link">Get free key at console.anthropic.com →</a>
+    </div>
+    <div class="key-group">
+      <label>ElevenLabs API Key <span class="key-badge eleven">Natural Voice</span></label>
+      <input type="password" id="elevenlabs-key-input" placeholder="Your ElevenLabs key…" autocomplete="off"/>
+      <a href="https://elevenlabs.io/" target="_blank" class="key-link">Get free key at elevenlabs.io →</a>
+    </div>
+    <div class="key-note">🔒 Keys are stored locally in your browser only. Never sent anywhere except the official APIs.</div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="save-keys-btn">Launch AURA ◈</button>
+      <button class="btn-ghost" id="skip-keys-btn">Continue without keys</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     DAILY CHECK-IN MODAL
+════════════════════════════════ -->
+<div class="modal-overlay hidden" id="checkin-modal">
+  <div class="modal-card checkin-card">
+    <div class="checkin-step" id="ci-step-1">
+      <p class="ci-greeting" id="ci-greeting">Good morning ✨</p>
+      <h2 class="modal-title">How are you today?</h2>
+      <p class="modal-desc">Pick what resonates most right now.</p>
+      <div class="emoji-grid">
+        <button class="emoji-btn" data-mood="great">😊<span>Great</span></button>
+        <button class="emoji-btn" data-mood="okay">😌<span>Okay</span></button>
+        <button class="emoji-btn" data-mood="tired">😴<span>Tired</span></button>
+        <button class="emoji-btn" data-mood="anxious">😰<span>Anxious</span></button>
+        <button class="emoji-btn" data-mood="sad">😔<span>Sad</span></button>
+        <button class="emoji-btn" data-mood="angry">😤<span>Frustrated</span></button>
+      </div>
+    </div>
+    <div class="checkin-step hidden" id="ci-step-2">
+      <p class="ci-greeting">One small thing 🌱</p>
+      <h2 class="modal-title">What are you grateful for today?</h2>
+      <p class="modal-desc">Even the tiniest thing counts.</p>
+      <textarea class="ci-textarea" id="ci-grateful" placeholder="e.g. Morning coffee, a friend's text, the sunshine…" rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="btn-primary" id="ci-submit-btn">Start my day →</button>
+        <button class="btn-ghost" id="ci-skip-step2-btn">Skip</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     BREATHING EXERCISE MODAL
+════════════════════════════════ -->
+<div class="modal-overlay hidden" id="breathing-modal">
+  <div class="modal-card breathing-card">
+    <button class="modal-close" id="breathing-close">✕</button>
+    <h2 class="modal-title">Breathing Exercise</h2>
+    <p class="modal-desc">4-7-8 breathing — calms the nervous system in minutes.</p>
+    <div class="breath-circle-wrap">
+      <svg class="breath-svg" viewBox="0 0 240 240">
+        <circle class="breath-track" cx="120" cy="120" r="100"/>
+        <circle class="breath-progress" id="breath-progress" cx="120" cy="120" r="100"/>
+      </svg>
+      <div class="breath-center" id="breath-circle">
+        <span class="breath-phase" id="breath-phase">Ready</span>
+        <span class="breath-num" id="breath-num">•</span>
+      </div>
+    </div>
+    <p class="breath-guide" id="breath-guide">Press Begin to start your session</p>
+    <div class="breath-controls">
+      <button class="btn-primary" id="breath-start-btn">Begin</button>
+      <button class="btn-ghost hidden" id="breath-stop-btn">Stop</button>
+    </div>
+    <p class="breath-cycles-label">Cycles completed: <strong id="breath-cycles">0</strong></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     MOOD HISTORY + JOURNAL MODAL
+════════════════════════════════ -->
+<div class="modal-overlay hidden" id="history-modal">
+  <div class="modal-card history-card">
+    <button class="modal-close" id="history-close">✕</button>
+    <h2 class="modal-title">Your Mood Journey</h2>
+    <div class="history-tabs">
+      <button class="htab active" data-tab="chart">📊 Mood Chart</button>
+      <button class="htab" data-tab="journal">📓 Gratitude Journal</button>
+    </div>
+    <div class="htab-content" id="htab-chart">
+      <canvas id="mood-chart" width="480" height="220"></canvas>
+      <div class="mood-stats" id="mood-stats"></div>
+    </div>
+    <div class="htab-content hidden" id="htab-journal">
+      <div class="gratitude-list" id="gratitude-list">
+        <p class="empty-state">No journal entries yet. Complete a daily check-in to start.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     SETTINGS MODAL
+════════════════════════════════ -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal-card settings-card">
+    <button class="modal-close" id="settings-close">✕</button>
+    <h2 class="modal-title">Settings</h2>
+    <div class="settings-group">
+      <label>Your Name</label>
+      <input type="text" id="user-name-input" placeholder="How should AURA call you?"/>
+    </div>
+    <div class="settings-group">
+      <label>Anthropic API Key</label>
+      <input type="password" id="settings-anthropic-key" placeholder="sk-ant-…"/>
+    </div>
+    <div class="settings-group">
+      <label>ElevenLabs API Key</label>
+      <input type="password" id="settings-elevenlabs-key" placeholder="ElevenLabs key…"/>
+    </div>
+    <div class="settings-group">
+      <label>Typing Speed</label>
+      <input type="range" id="typing-speed" min="5" max="60" value="20" class="range-input"/>
+      <span id="typing-speed-label">20ms</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="settings-save-btn">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     HEADER
+════════════════════════════════ -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">◈</span>
+    <div>
       <span class="logo-text">AURA</span>
       <span class="logo-sub">Emotional AI</span>
     </div>
-    <div class="header-controls">
-      <div class="mood-display" id="mood-display">
-        <span class="mood-icon" id="mood-icon">😌</span>
-        <span class="mood-label" id="mood-label">Neutral</span>
-      </div>
-      <button class="icon-btn" id="voice-toggle" title="Toggle Voice">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-          <path class="voice-on" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-          <path class="voice-off hidden" d="M23 9l-6 6M17 9l6 6"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="clear-btn" title="Clear Chat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14H6L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4h6v2"/>
-        </svg>
-      </button>
+  </div>
+
+  <nav class="header-nav">
+    <button class="nav-btn" id="checkin-btn" title="Daily Check-In">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Check-In</span>
+    </button>
+    <button class="nav-btn" id="breath-btn" title="Breathing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><circle cx="12" cy="12" r="4"/></svg>
+      <span>Breathe</span>
+    </button>
+    <button class="nav-btn" id="history-btn" title="History">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>History</span>
+    </button>
+  </nav>
+
+  <div class="header-controls">
+    <div class="mood-pill" id="mood-pill">
+      <span id="mood-icon">😌</span>
+      <span id="mood-label">Neutral</span>
     </div>
-  </header>
+    <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+      <svg class="th-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="th-moon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="icon-btn active" id="voice-toggle" title="Voice Output">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <path class="v-on" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path class="v-off hidden" d="M23 9l-6 6M17 9l6 6"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="settings-btn" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <button class="icon-btn" id="clear-btn" title="Clear Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+  </div>
+</header>
 
-  <!-- Main App -->
-  <main class="app-container">
+<!-- ═══════════════════════════════
+     MAIN APP
+════════════════════════════════ -->
+<main class="app-container">
 
-    <!-- AI Orb -->
-    <div class="orb-section">
-      <div class="orb-wrapper" id="orb-wrapper">
-        <div class="orb-ring orb-ring-1"></div>
-        <div class="orb-ring orb-ring-2"></div>
-        <div class="orb-ring orb-ring-3"></div>
-        <div class="orb-core" id="orb-core">
-          <div class="orb-inner">
-            <div class="orb-pulse"></div>
-            <span class="orb-symbol">◈</span>
-          </div>
+  <!-- Orb Sidebar -->
+  <aside class="orb-section">
+    <div class="orb-wrapper">
+      <div class="orb-ring orb-ring-1"></div>
+      <div class="orb-ring orb-ring-2"></div>
+      <div class="orb-ring orb-ring-3"></div>
+      <div class="orb-core" id="orb-core">
+        <div class="orb-inner">
+          <div class="orb-pulse"></div>
+          <span class="orb-symbol">◈</span>
         </div>
-        <div class="orb-particles" id="orb-particles"></div>
       </div>
-      <div class="orb-status" id="orb-status">
-        <span class="status-dot" id="status-dot"></span>
-        <span id="status-text">Ready to listen</span>
-      </div>
+      <canvas id="orb-waveform" class="orb-waveform" width="180" height="180"></canvas>
+      <div class="orb-particles" id="orb-particles"></div>
+    </div>
+    <div class="orb-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Ready</span>
     </div>
 
-    <!-- Chat Container -->
-    <div class="chat-section">
-      <div class="chat-window" id="chat-window">
-        <div class="chat-intro" id="chat-intro">
-          <p class="intro-line">Hey, I'm <strong>AURA</strong>.</p>
-          <p class="intro-sub">I'm here to listen, support, and think with you.<br/>What's on your mind?</p>
-        </div>
-      </div>
-
-      <!-- Thinking Bar -->
-      <div class="thinking-bar" id="thinking-bar">
-        <div class="thinking-steps" id="thinking-steps"></div>
-      </div>
-
-      <!-- Input Area -->
-      <div class="input-area">
-        <div class="input-wrapper">
-          <textarea
-            id="user-input"
-            placeholder="Share what's on your mind…"
-            rows="1"
-            maxlength="500"
-          ></textarea>
-          <div class="input-actions">
-            <button class="mic-btn" id="mic-btn" title="Speak">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="2" width="6" height="11" rx="3"/>
-                <path d="M5 10a7 7 0 0 0 14 0"/>
-                <line x1="12" y1="19" x2="12" y2="22"/>
-                <line x1="8" y1="22" x2="16" y2="22"/>
-              </svg>
-            </button>
-            <button class="send-btn" id="send-btn" title="Send">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="char-count" id="char-count">0 / 500</div>
+    <div class="sidebar-section">
+      <p class="sidebar-label">Focus Mode</p>
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="companion">💬<span>Companion</span></button>
+        <button class="mode-btn" data-mode="vent">🌊<span>Vent</span></button>
+        <button class="mode-btn" data-mode="advice">🧭<span>Advice</span></button>
+        <button class="mode-btn" data-mode="reflect">🪞<span>Reflect</span></button>
       </div>
     </div>
 
-  </main>
+    <div class="sidebar-section">
+      <p class="sidebar-label">AI Voice</p>
+      <select id="voice-select" class="voice-select">
+        <option value="browser">🖥 Browser Voice</option>
+        <option value="rachel">🎙 ElevenLabs — Rachel</option>
+        <option value="bella">🎙 ElevenLabs — Bella</option>
+        <option value="josh">🎙 ElevenLabs — Josh</option>
+        <option value="elli">🎙 ElevenLabs — Elli</option>
+        <option value="domi">🎙 ElevenLabs — Domi</option>
+        <option value="adam">🎙 ElevenLabs — Adam</option>
+      </select>
+    </div>
+  </aside>
 
-  <script src="script.js"></script>
+  <!-- Chat Panel -->
+  <section class="chat-section">
+    <div class="chat-window" id="chat-window">
+      <div class="chat-intro" id="chat-intro">
+        <p class="intro-greeting" id="intro-greeting">Hey there ✨</p>
+        <p class="intro-name" id="intro-name">I'm <strong>AURA</strong></p>
+        <p class="intro-sub">Your emotional AI companion — here to listen, reflect, and support.<br/>What's on your mind?</p>
+      </div>
+    </div>
+
+    <div class="thinking-bar" id="thinking-bar">
+      <div class="thinking-steps" id="thinking-steps"></div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea id="user-input" placeholder="Share what's on your mind…" rows="1" maxlength="1000"></textarea>
+        <div class="input-btns">
+          <button class="mic-btn" id="mic-btn" title="Hold to speak">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="2" width="6" height="11" rx="3"/>
+              <path d="M5 10a7 7 0 0 0 14 0"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </button>
+          <button class="send-btn" id="send-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-meta">
+        <span class="mode-indicator" id="mode-indicator">💬 Companion Mode</span>
+        <span class="char-count" id="char-count">0 / 1000</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
